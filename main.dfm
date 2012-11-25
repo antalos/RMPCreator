@@ -37,7 +37,7 @@ object Form1: TForm1
     TabOrder = 0
   end
   object btnOpenTiffs: TButton
-    Left = 8
+    Left = 1
     Top = 8
     Width = 75
     Height = 35
@@ -83,7 +83,7 @@ object Form1: TForm1
     TabOrder = 12
   end
   object inProv: TLabeledEdit
-    Left = 8
+    Left = 1
     Top = 64
     Width = 130
     Height = 21
@@ -93,7 +93,7 @@ object Form1: TForm1
     TabOrder = 3
   end
   object inGroup: TLabeledEdit
-    Left = 144
+    Left = 137
     Top = 64
     Width = 130
     Height = 21
@@ -103,7 +103,7 @@ object Form1: TForm1
     TabOrder = 4
   end
   object rbAtlas: TRadioButton
-    Left = 8
+    Left = 1
     Top = 96
     Width = 129
     Height = 17
@@ -112,7 +112,7 @@ object Form1: TForm1
     OnClick = rbAtlasClick
   end
   object rbSingle: TRadioButton
-    Left = 144
+    Left = 1
     Top = 96
     Width = 135
     Height = 17
@@ -121,7 +121,7 @@ object Form1: TForm1
     OnClick = rbSingleClick
   end
   object btnHelp: TButton
-    Left = 720
+    Left = 728
     Top = 7
     Width = 65
     Height = 35
@@ -131,7 +131,7 @@ object Form1: TForm1
     OnClick = btnHelpClick
   end
   object btnCreateRMP: TButton
-    Left = 88
+    Left = 80
     Top = 8
     Width = 75
     Height = 35
@@ -170,9 +170,9 @@ object Form1: TForm1
     OnClick = btnVisualizeClick
   end
   object GroupBox1: TGroupBox
-    Left = 279
+    Left = 272
     Top = 2
-    Width = 265
+    Width = 273
     Height = 113
     Anchors = [akTop, akRight]
     Caption = 'geoTIFF export Scale'
@@ -186,8 +186,8 @@ object Form1: TForm1
     end
     object cbModel: TComboBox
       Left = 8
-      Top = 35
-      Width = 100
+      Top = 34
+      Width = 110
       Height = 21
       Style = csDropDownList
       ItemHeight = 13
@@ -201,8 +201,8 @@ object Form1: TForm1
         'eXp 710')
     end
     object inExportScale: TLabeledEdit
-      Left = 8
-      Top = 80
+      Left = 123
+      Top = 34
       Width = 145
       Height = 21
       EditLabel.Width = 72
@@ -212,8 +212,8 @@ object Form1: TForm1
       OnChange = inExportScaleChange
     end
     object btnSetScale: TButton
-      Left = 203
-      Top = 78
+      Left = 211
+      Top = 60
       Width = 57
       Height = 25
       Caption = 'Set'
@@ -221,17 +221,17 @@ object Form1: TForm1
       OnClick = btnSetScaleClick
     end
     object memoScale: TMemo
-      Left = 111
-      Top = 12
+      Left = 7
+      Top = 60
       Width = 150
       Height = 45
       TabOrder = 3
     end
   end
   object GroupBox2: TGroupBox
-    Left = 546
+    Left = 550
     Top = 2
-    Width = 169
+    Width = 175
     Height = 113
     Anchors = [akTop, akRight]
     Caption = 'Use gdal_translate for tiling'
@@ -269,9 +269,9 @@ object Form1: TForm1
     end
   end
   object Button1: TButton
-    Left = 720
-    Top = 72
-    Width = 73
+    Left = 736
+    Top = 88
+    Width = 57
     Height = 25
     Caption = 'Button1'
     TabOrder = 15
@@ -279,7 +279,7 @@ object Form1: TForm1
     OnClick = Button1Click
   end
   object inJpegQual: TLabeledEdit
-    Left = 193
+    Left = 187
     Top = 20
     Width = 80
     Height = 21
