@@ -112,7 +112,7 @@ object Form1: TForm1
     OnClick = rbAtlasClick
   end
   object rbSingle: TRadioButton
-    Left = 1
+    Left = 137
     Top = 96
     Width = 135
     Height = 17
