@@ -97,7 +97,7 @@ var
 
 const
   debug = 0;
-  ver = '0.9';
+  ver = '0.91';
 
 
 procedure log(s:string);

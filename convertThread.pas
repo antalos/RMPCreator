@@ -369,7 +369,7 @@ begin
           tilejpg.Compress;
           tilejpg.SaveToFile(jpegfname);
         end else begin
-          cmd := path + 'gdal_translate.exe -of JPEG -co QUALITY=' + inttostr(jpegQuality) + ' -expand rgb -srcwin '+inttostr(x)+' '+inttostr(y)+' '+inttostr(tw)+' '+inttostr(th)+' "'+WinToDos(tiff.fname)+'" ';
+          cmd := '"'+path + 'gdal_translate.exe" -of JPEG -co QUALITY=' + inttostr(jpegQuality) + ' -expand rgb -srcwin '+inttostr(x)+' '+inttostr(y)+' '+inttostr(tw)+' '+inttostr(th)+' "'+WinToDos(tiff.fname)+'" ';
           cmd := cmd + ' '+tile_dir + '\tile-' + inttostr(tiff.num) + '-'+inttostr(ix)+'-'+inttostr(iy)+'.jpg';
           file_put_contents(path+'tilify.bat', cmd);
           //log(cmd);
