@@ -8,9 +8,7 @@ done:
 
 
 ToDO:
-++ add info about tiling on GM export
 -- add info about scales
--- sources
 
 D:\TEMP\PROJ4\proj-4.6.1\bin>cs2cs +proj=latlong +ellps=krass +towgs84=28,-130,-95,0,0,0,0 +to  +proj=latlong +ellps=WGS84 +datum=WGS84
 }
@@ -74,6 +72,7 @@ type
     procedure inUseExternalYChange(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure inJpegQualChange(Sender: TObject);
   private
     { Private declarations }
   public
@@ -97,7 +96,7 @@ var
 
 const
   debug = 0;
-  ver = '0.91';
+  ver = '0.92';
 
 
 procedure log(s:string);
@@ -199,7 +198,6 @@ begin
     write_config_val('last_dir', tiff_dir );
     write_config_val('prov', trim(inProv.Text) );
     write_config_val('group', trim(inGroup.Text) );
-    write_config_val('jpeg_quality', trim(inJpegQual.Text) );
 
     for i:=0 to openTiff.Files.Count - 1 do begin
       path := ExtractFilePath(openTiff.Files[i])+'\'+ExtractFileName(openTiff.Files[i]);
@@ -239,6 +237,7 @@ var
   i : word;
   fn : string;
   prov, group : string;
+  tmp : string;
 begin
   pbConvert.Position := 0;
 
@@ -247,6 +246,14 @@ begin
     //done
     if (curtiff > ntiffs) then begin
       toggle_controls(true);
+
+      //delete temp files
+      if ( debug = 0   ) then begin
+        tmp := GetTempDir();
+        if tmp = '' then tmp := path;
+        clean_dir(  tmp + '\forrmp\', '*.*' );
+        clean_dir(  tmp + '\tiles\', '*.*' );
+      end;
       exit;
     end;
 
@@ -311,6 +318,7 @@ end;
 
 procedure TForm1.btnCreateRMPClick(Sender: TObject);
 begin
+  jpegQuality := strToInt( inJpegQual.text );
   toggle_controls( false );
   run_next();
 end;
@@ -323,7 +331,7 @@ begin
   btnDeleteTiff.Enabled := state;
   btnClearTiffs.Enabled := state;
   btnVisualize.Enabled := state;
-  
+
   inGroup.Enabled := state;
   inProv.Enabled := state;
 
@@ -553,6 +561,11 @@ begin
    SaveResourceAsFile('exp_sig', ProgressThread1.forrmp_dir + '\BMP4BIT.ICS');
     SaveResourceAsFile('triton_sig', ProgressThread1.forrmp_dir + 'chunk.ics');
     ProgressThread1.pack_rmp( ProgressThread1.rmpfname );
+end;
+
+procedure TForm1.inJpegQualChange(Sender: TObject);
+begin
+    write_config_val('jpeg_quality', trim(inJpegQual.Text) );
 end;
 
 end.

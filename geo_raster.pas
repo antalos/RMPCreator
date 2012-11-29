@@ -23,12 +23,13 @@ type
     
     w, h : dword;
     tilew, tileh : dword;
+    firstTilex, firstTiley : dword;
+    x_dif, y_dif : dword;
+
     scalex, scaley : double;
     tlx, tly : double;
     brx, bry : double;
     err : string;
-    firstTilex, firstTiley : dword;
-    x_dif, y_dif : dword;
 
     num : dword;
     isok : boolean;

@@ -224,10 +224,11 @@ var
   pic : Tpicture;
   cmd : string;
   use_external : boolean;
+  gdal_path : string;
 begin
 
   tiff := tifffiles[ curtiff ];
-  path := ExtractFilePath(ParamStr(0)) + '\gdal\';
+  gdal_path := ExtractFilePath(ParamStr(0)) + '\gdal\';
 
   maxcmp  := 20;
 
@@ -287,7 +288,7 @@ begin
     blackbmp.Canvas.FillRect( r );
 
     tilejpg := TJPEGImage.Create;
-    tilejpg.CompressionQuality := jpegQuality;//75;//80;
+
   end;
 
 //  log('difx='+istr(tiff.x_dif)+'  dify='+istr(tiff.y_dif));
@@ -366,14 +367,15 @@ begin
           jpegfname := tile_dir + '\tile-' + inttostr(tiff.num) + '-'+inttostr(ix)+'-'+inttostr(iy)+'.jpg';
 
           tilejpg.Assign(tilebmp) ;
+          tilejpg.CompressionQuality := jpegQuality;//75;//80;
           tilejpg.Compress;
           tilejpg.SaveToFile(jpegfname);
         end else begin
-          cmd := '"'+path + 'gdal_translate.exe" -of JPEG -co QUALITY=' + inttostr(jpegQuality) + ' -expand rgb -srcwin '+inttostr(x)+' '+inttostr(y)+' '+inttostr(tw)+' '+inttostr(th)+' "'+WinToDos(tiff.fname)+'" ';
+          cmd := '"'+gdal_path + 'gdal_translate.exe" -of JPEG -co QUALITY=' + inttostr(jpegQuality) + ' -expand rgb -srcwin '+inttostr(x)+' '+inttostr(y)+' '+inttostr(tw)+' '+inttostr(th)+' "'+WinToDos(tiff.fname)+'" ';
           cmd := cmd + ' '+tile_dir + '\tile-' + inttostr(tiff.num) + '-'+inttostr(ix)+'-'+inttostr(iy)+'.jpg';
-          file_put_contents(path+'tilify.bat', cmd);
+          file_put_contents(gdal_path+'tilify.bat', cmd);
           //log(cmd);
-          execcmd(path+'tilify.bat', false, true);
+          execcmd(gdal_path+'tilify.bat', false, true);
           if do_resize then set_jpeg_padding(tile_dir + '\tile-' + inttostr(tiff.num) + '-'+inttostr(ix)+'-'+inttostr(iy)+'.jpg', hor_mode, ver_mode);
         end;
 
