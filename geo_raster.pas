@@ -123,15 +123,17 @@ begin
 
   
 
-  brx := tlx + abs(pixx) * w;
-  bry := tly + abs(pixy) * h;
+    brx := tlx + abs(pixx) * w;
+    bry := tly + abs(pixy) * h;
+
+
   scalex := pixx * 256;
   scaley := pixy * 256;
 
 
-  {log( Format('Image Size = %dx%d ', [w,h])+'  Scale X:'+fstr(scalex)+' Scale Y:'+fstr(scaley)+' pixX='+fstr(pixx)+' pixY='+fstr(pixy));
+  log( Format('Image Size = %dx%d ', [w,h])+'  Scale X:'+fstr(scalex)+' Scale Y:'+fstr(scaley)+' pixX='+fstr(pixx)+' pixY='+fstr(pixy));
   log( 'Top left: '+dump_coordx(tlx)+' , '+dump_coordy(tly)+'   =   '+fstr(tlx)+' , '+fstr(tly));
-  log( 'Bot righ: '+dump_coordx(brx)+' , '+dump_coordy(bry)+'   =   '+fstr(brx)+' , '+fstr(bry));      }
+  log( 'Bot righ: '+dump_coordx(brx)+' , '+dump_coordy(bry)+'   =   '+fstr(brx)+' , '+fstr(bry));      
 
 
   if (w = 0) or (h = 0) or (pixx = 0) or (pixy = 0) then begin
@@ -459,15 +461,16 @@ DecimalSeparator := '.';
       end;
     end;
 
-    log( 'min X = '+fstr(coordx[mini]) );
-    log( 'max X = '+fstr(coordx[maxi]) );
+    log( 'min X = '+fstr(coordx[mini])+' at mini = '+istr(mini) );
+    log( 'max X = '+fstr(coordx[maxi])+' at maxi = '+istr(maxi) );
 
     r := abs( coordx[maxi] - coordx[mini] );
-    scalex := r / ( pixx[maxi] - pixx[mini]);
-    if (scaley > 0) then scaley := 0 - scaley;
+    scalex := r / ( pixy[maxi] - pixy[mini]);
+    log('r='+fstr(r)+' pix='+istr(pixx[maxi] - pixx[mini]) );
 
     r := abs( coordy[maxi] - coordy[mini] );
-    scaley := r / ( pixy[maxi] - pixy[mini]);
+    scaley := r / ( pixx[maxi] - pixx[mini]);
+    if (scaley > 0) then scaley := 0 - scaley;
 
     log(' scalex = '+fstr(scalex) );
     log(' scaley = '+fstr(scaley) );
@@ -475,8 +478,8 @@ DecimalSeparator := '.';
     leftx := coordx[mini] - abs(scalex) * pixx[mini];
     lefty := coordy[mini] - abs(scaley) * pixy[mini];
 
-    //log( fstr(coordx[mini]) + ',' + fstr(coordy[mini]));
-    //log( fstr(leftx) + ',' + fstr(lefty));
+    log( fstr(coordx[mini]) + ',' + fstr(coordy[mini]));
+    log( fstr(leftx) + ',' + fstr(lefty));
 
   except
     closefile(f);

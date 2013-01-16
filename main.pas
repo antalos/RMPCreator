@@ -96,7 +96,7 @@ var
 
 const
   debug = 0;
-  ver = '0.92';
+  ver = '0.93';
 
 
 procedure log(s:string);
@@ -256,6 +256,7 @@ begin
       end;
       exit;
     end;
+    savedialog1.initialdir := openTiff.InitialDir;
 
     //RMP for every TIFF
     if rbSingle.Checked then begin
@@ -270,7 +271,7 @@ begin
     //atlas
     else begin
       sgStatus.cells[0,1] := 'Atlas';
-      savedialog1.initialdir := openTiff.InitialDir;
+
       
       if (SaveDialog1.execute) then begin
         fn := savedialog1.FileName;
