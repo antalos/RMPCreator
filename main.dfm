@@ -1,9 +1,10 @@
 object Form1: TForm1
-  Left = 249
-  Top = 121
-  Width = 802
-  Height = 600
+  Left = 258
+  Top = 0
+  AutoScroll = False
   Caption = 'RMP Creator'
+  ClientHeight = 568
+  ClientWidth = 792
   Color = clBtnFace
   Constraints.MinHeight = 600
   Constraints.MinWidth = 800
@@ -13,42 +14,43 @@ object Form1: TForm1
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesktopCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
   DesignSize = (
-    794
-    573)
+    792
+    568)
   PixelsPerInch = 96
   TextHeight = 13
   object lLoading: TLabel
     Left = 672
-    Top = 200
+    Top = 198
     Width = 38
     Height = 13
     Caption = 'Loading'
   end
   object pbConvert: TProgressBar
-    Left = 0
-    Top = 546
-    Width = 794
-    Height = 25
+    Left = 1
+    Top = 542
+    Width = 790
+    Height = 26
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 0
   end
   object btnOpenTiffs: TButton
     Left = 1
-    Top = 8
+    Top = 7
     Width = 75
-    Height = 35
+    Height = 34
     Caption = 'Open maps'
     TabOrder = 1
     OnClick = btnOpenTiffsClick
   end
   object sgStatus: TStringGrid
     Left = 1
-    Top = 119
-    Width = 792
+    Top = 115
+    Width = 790
     Height = 396
     Anchors = [akLeft, akTop, akBottom]
     ColCount = 6
@@ -73,18 +75,19 @@ object Form1: TForm1
       24)
   end
   object memoLog: TMemo
-    Left = 386
-    Top = 246
+    Left = 248
+    Top = 144
     Width = 393
     Height = 256
     Anchors = [akRight, akBottom]
     Lines.Strings = (
       'memoLog')
+    ScrollBars = ssVertical
     TabOrder = 12
   end
   object inProv: TLabeledEdit
     Left = 1
-    Top = 64
+    Top = 63
     Width = 130
     Height = 21
     EditLabel.Width = 63
@@ -94,7 +97,7 @@ object Form1: TForm1
   end
   object inGroup: TLabeledEdit
     Left = 137
-    Top = 64
+    Top = 63
     Width = 130
     Height = 21
     EditLabel.Width = 53
@@ -104,7 +107,7 @@ object Form1: TForm1
   end
   object rbAtlas: TRadioButton
     Left = 1
-    Top = 96
+    Top = 94
     Width = 129
     Height = 17
     Caption = 'All files to one RMP'
@@ -113,7 +116,7 @@ object Form1: TForm1
   end
   object rbSingle: TRadioButton
     Left = 137
-    Top = 96
+    Top = 94
     Width = 135
     Height = 17
     Caption = 'Every file to single RMP'
@@ -121,8 +124,8 @@ object Form1: TForm1
     OnClick = rbSingleClick
   end
   object btnHelp: TButton
-    Left = 728
-    Top = 7
+    Left = 726
+    Top = 6
     Width = 65
     Height = 35
     Anchors = [akTop, akRight]
@@ -132,18 +135,18 @@ object Form1: TForm1
   end
   object btnCreateRMP: TButton
     Left = 80
-    Top = 8
+    Top = 7
     Width = 75
-    Height = 35
+    Height = 34
     Caption = 'Create RMP'
     TabOrder = 2
     OnClick = btnCreateRMPClick
   end
   object btnDeleteTiff: TButton
-    Left = 0
-    Top = 518
+    Left = 1
+    Top = 517
     Width = 49
-    Height = 25
+    Height = 24
     Anchors = [akLeft, akBottom]
     Caption = 'Remove'
     TabOrder = 8
@@ -151,17 +154,17 @@ object Form1: TForm1
   end
   object btnClearTiffs: TButton
     Left = 55
-    Top = 518
+    Top = 517
     Width = 49
-    Height = 25
+    Height = 24
     Anchors = [akLeft, akBottom]
     Caption = 'Clear'
     TabOrder = 9
     OnClick = btnClearTiffsClick
   end
   object btnVisualize: TButton
-    Left = 718
-    Top = 518
+    Left = 716
+    Top = 514
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -170,18 +173,22 @@ object Form1: TForm1
     OnClick = btnVisualizeClick
   end
   object GroupBox1: TGroupBox
-    Left = 272
-    Top = 2
+    Left = 271
+    Top = 0
     Width = 273
-    Height = 113
+    Height = 114
     Anchors = [akTop, akRight]
     Caption = 'geoTIFF export Scale'
     TabOrder = 13
+    DesignSize = (
+      273
+      114)
     object Label1: TLabel
       Left = 8
       Top = 18
       Width = 65
       Height = 13
+      Anchors = [akTop, akRight]
       Caption = 'Device model'
     end
     object cbModel: TComboBox
@@ -229,10 +236,10 @@ object Form1: TForm1
     end
   end
   object GroupBox2: TGroupBox
-    Left = 550
-    Top = 2
+    Left = 548
+    Top = 0
     Width = 175
-    Height = 113
+    Height = 114
     Anchors = [akTop, akRight]
     Caption = 'Use gdal_translate for tiling'
     TabOrder = 14
@@ -270,7 +277,7 @@ object Form1: TForm1
   end
   object Button1: TButton
     Left = 736
-    Top = 88
+    Top = 86
     Width = 57
     Height = 25
     Caption = 'Button1'
@@ -280,25 +287,26 @@ object Form1: TForm1
   end
   object inJpegQual: TLabeledEdit
     Left = 187
-    Top = 20
+    Top = 19
     Width = 80
     Height = 21
     EditLabel.Width = 60
     EditLabel.Height = 13
     EditLabel.Caption = 'JPEG quality'
     TabOrder = 16
+    OnChange = inJpegQualChange
   end
   object openTiff: TOpenDialog
     Filter = 
       'All Supported types|*.tif; *.tiff; *.map|OziExplorer .MAP|*.map|' +
       'geoTIFF|*.tiff; *.tif'
     Left = 136
-    Top = 520
+    Top = 512
   end
   object SaveDialog1: TSaveDialog
     FileName = '*.rmp'
     Filter = 'RMP File'
     Left = 176
-    Top = 520
+    Top = 513
   end
 end
