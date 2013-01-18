@@ -34,6 +34,9 @@ type
     procedure do_abort();
 
     procedure craft_tiles(  );
+    procedure gdal_craft_tiles( );
+    procedure get_tile_params(ix, iy: dword; tiff :TGeoRasterRec; var x, y, tw, th :dword; var do_resize : boolean; var hor_mode, ver_mode : string);
+
 
   protected
     procedure Execute; override;
@@ -141,7 +144,6 @@ begin
   ndone := 1;
   Synchronize( UpdateProgressBar );
 
-
   for i:=1 to ntiffs do begin
     curtiff := i;
     Synchronize( craft_tiles );
@@ -165,6 +167,7 @@ begin
     have_errors := true;
     msg := '[ERROR] while packing rmp';
   end;
+
 
   do_abort();
 end;
@@ -203,6 +206,31 @@ end;
 
 //************************************
 //splitting raster into tiles
+
+procedure cconvertThread.get_tile_params(ix, iy: dword; tiff : TGeoRasterRec; var x, y, tw, th :dword; var do_resize : boolean; var hor_mode, ver_mode : string);
+begin
+  do_resize := false;
+  x := 0;
+  if (ix >= 2) then x := x + tiff.x_dif;
+  if (ix >= 3) then x := x + (ix - 2) * 256;
+
+  y := 0;
+  if (iy >= 2) then y := y + tiff.y_dif;
+  if (iy >= 3) then y := y + (iy - 2) * 256;
+
+  if (ix = 1) and (tiff.x_dif > 0) then tw := tiff.x_dif else tw := 256;
+  if (iy = 1) and (tiff.y_dif > 0) then th := tiff.y_dif else th := 256;
+
+  if (tiff.w >= tiff.x_dif) and (x + tw > tiff.w) then tw := tiff.w - x;
+  if (tiff.h >= tiff.y_dif) and (y + th > tiff.h) then th := tiff.h - y;
+
+  if (tw <> 256) or (th <> 256) then begin
+    if (iy = 1) then ver_mode := 'bottom' else ver_mode := 'top';
+    if (ix = 1) then hor_mode := 'right' else hor_mode := 'left';
+    do_resize := true;
+  end;
+end;
+
 procedure cconvertThread.craft_tiles( );
 var
   //imgbitmap,
@@ -213,175 +241,132 @@ var
   ver_mode, hor_mode : string;
   r, r2 : TRect;
   jpegfname : string;
-  filled : boolean;
-  c1, c2: PByte;
-  icmp : integer;
-  cmp, maxcmp : byte;
   tiff : TGeoRasterRec;
   j : TJPEGImage;
   g : tgifimage;
   p : TPNGObject;
   pic : Tpicture;
-  cmd : string;
   use_external : boolean;
-  gdal_path : string;
 begin
-
   tiff := tifffiles[ curtiff ];
-  gdal_path := ExtractFilePath(ParamStr(0)) + '\gdal\';
-
-  maxcmp  := 20;
-
   use_external := false;
-  if (tiff.w > StrToInt(fMain.inUseExternalX.Text) ) or (tiff.h > StrToInt(fMain.inUseExternalY.Text)) then use_external := true;
-  if (fMain.cbUseExternal.Checked) then use_external := true;
 
+  if (fMain.cbUseExternal.Checked) or (tiff.w > dword(StrToInt(fMain.inUseExternalX.Text)) ) or (tiff.h > dword(StrToInt(fMain.inUseExternalY.Text))) then use_external := true;
 
-  if not(use_external) then begin
-    try
-      pic := Tpicture.Create;
-      if tiff.im_type = IM_TYPE_TIFF then begin
-        tmpbitmap := ReadTiffIntoBitmap( tiff.fname );
-        pic.Assign(tmpbitmap);
-        tmpbitmap.free;
-        //pic.bitmap := ReadTiffIntoBitmap( tiff.fname );
-      end else if tiff.im_type = IM_TYPE_BMP then begin
-        pic.LoadFromFile( tiff.fname );
-      end else if tiff.im_type = IM_TYPE_JPEG then begin
-        j := TJPEGImage.Create;
-        j.LoadFromFile( tiff.fname );
-        pic.Bitmap.Assign( j );
-        j.free;
-      end else if tiff.im_type = IM_TYPE_GIF then begin
-        g := TGIFIMAGE.Create;
-        g.LoadFromFile( tiff.fname );
-        pic.Bitmap.Assign( g );
-        g.free;
-      end else if tiff.im_type = IM_TYPE_PNG then begin
-        p := TPNGObject.Create;
-        p.LoadFromFile( tiff.fname );
-        pic.bitmap.width := p.width;
-        pic.bitmap.height := p.height;
-        pic.bitmap.Canvas.Draw(0, 0, p);
-        p.free;
-      end;
-    except
-      have_errors := true;
-      msg := '[err] while loading raster';
-      pic.Free;
+  if (use_external) then begin
+      gdal_craft_tiles( );
       exit;
-    end;
-
-    tilebmp := TBitmap.create;
-    tilebmp.Width := 256;
-    tilebmp.Height := 256;
-  
-    blackbmp := TBitmap.create;
-    blackbmp.Width := 256;
-    blackbmp.Height := 256;
-    blackbmp.Canvas.Brush.Color := rgb(0,0,0);
-    blackbmp.Canvas.Brush.style := bsSolid;
-    r.left := 0;
-    r.top := 0;
-    r.right := 256;
-    r.bottom := 256;
-    blackbmp.Canvas.FillRect( r );
-
-    tilejpg := TJPEGImage.Create;
-
   end;
+
+  try
+    pic := Tpicture.Create;
+    if tiff.im_type = IM_TYPE_TIFF then begin
+      tmpbitmap := ReadTiffIntoBitmap( tiff.fname );
+      pic.Assign(tmpbitmap);
+      tmpbitmap.free;
+      //pic.bitmap := ReadTiffIntoBitmap( tiff.fname );
+    end else if tiff.im_type = IM_TYPE_BMP then begin
+      pic.LoadFromFile( tiff.fname );
+    end else if tiff.im_type = IM_TYPE_JPEG then begin
+      j := TJPEGImage.Create;
+      j.LoadFromFile( tiff.fname );
+      pic.Bitmap.Assign( j );
+      j.free;
+    end else if tiff.im_type = IM_TYPE_GIF then begin
+      g := TGIFIMAGE.Create;
+      g.LoadFromFile( tiff.fname );
+      pic.Bitmap.Assign( g );
+      g.free;
+    end else if tiff.im_type = IM_TYPE_PNG then begin
+      p := TPNGObject.Create;
+      p.LoadFromFile( tiff.fname );
+      pic.bitmap.width := p.width;
+      pic.bitmap.height := p.height;
+      pic.bitmap.Canvas.Draw(0, 0, p);
+      p.free;
+    end;
+  except
+    have_errors := true;
+    msg := '[err] while loading raster';
+    pic.Free;
+    exit;
+  end;
+
+  tilebmp := TBitmap.create;
+  tilebmp.Width := 256;
+  tilebmp.Height := 256;
+  
+  blackbmp := TBitmap.create;
+  blackbmp.Width := 256;
+  blackbmp.Height := 256;
+  blackbmp.Canvas.Brush.Color := rgb(0,0,0);
+  blackbmp.Canvas.Brush.style := bsSolid;
+  r.left := 0;
+  r.top := 0;
+  r.right := 256;
+  r.bottom := 256;
+  blackbmp.Canvas.FillRect( r );
+
+  tilejpg := TJPEGImage.Create;
+
+
 
 //  log('difx='+istr(tiff.x_dif)+'  dify='+istr(tiff.y_dif));
 
   for ix:=1 to tiff.tilew do begin
     for iy:=1 to tiff.tileh do begin
-
-      do_resize := false;
-      x := 0;
-      if (ix >= 2) then x := x + tiff.x_dif;
-      if (ix >= 3) then x := x + (ix - 2) * 256;
-
-      y := 0;
-      if (iy >= 2) then y := y + tiff.y_dif;
-      if (iy >= 3) then y := y + (iy - 2) * 256;
-
-      if (ix = 1) and (tiff.x_dif > 0) then tw := tiff.x_dif else tw := 256;
-      if (iy = 1) and (tiff.y_dif > 0) then th := tiff.y_dif else th := 256;
-
-      if (tiff.w >= tiff.x_dif) and (x + tw > tiff.w) then tw := tiff.w - x;
-      if (tiff.h >= tiff.y_dif) and (y + th > tiff.h) then th := tiff.h - y;
-
-      if (tw <> 256) or (th <> 256) then begin
-        if (iy = 1) then ver_mode := 'bottom' else ver_mode := 'top';
-        if (ix = 1) then hor_mode := 'right' else hor_mode := 'left';
-        do_resize := true;
-      end;
-
+      get_tile_params(ix, iy, tiff, x, y, tw, th, do_resize, hor_mode, ver_mode);
 //      log('['+istr(ix)+','+istr(iy)+'] '+istr(tw)+','+istr(th));
-
       try
-       if not(use_external) then begin
-          tilebmp.Canvas.Lock;
-          tilebmp.Canvas.Brush.Color := rgb(0,0,0);
-          tilebmp.Canvas.Brush.style := bsSolid;
-          r.left := 0;
-          r.top := 0;
-          r.right := 256;
-          r.bottom := 256;
-          tilebmp.Canvas.FillRect( r );
+        tilebmp.Canvas.Lock;
+        tilebmp.Canvas.Brush.Color := rgb(0,0,0);
+        tilebmp.Canvas.Brush.style := bsSolid;
+        r.left := 0;
+        r.top := 0;
+        r.right := 256;
+        r.bottom := 256;
+        tilebmp.Canvas.FillRect( r );
 
-          r2.left := x;
-          r2.Top := y;
-          r2.Right := x + tw;
-          r2.Bottom := y + th;  
+        r2.left := x;
+        r2.Top := y;
+        r2.Right := x + tw;
+        r2.Bottom := y + th;
 
-          if (do_resize = false) then begin
-          r.Left := 0;
-          r.Top := 0;
-          r.Right := 256;
-          r.Bottom := 256;
+        if (do_resize = false) then begin
+        r.Left := 0;
+        r.Top := 0;
+        r.Right := 256;
+        r.Bottom := 256;
 
-          end else begin
-          if (hor_mode = 'left') then begin
-            r.left := 0;
-            r.Right := tw;
-          end else begin
-            r.Left := 256 -  tw;
-            r.Right := 256;
-          end;
-
-          if (ver_mode = 'top') then begin
-            r.top := 0;
-            r.Bottom := th;
-          end else begin
-            r.top := 256 - th;
-            r.Bottom := 256;
-          end;
-
-          end;
-
-
-          tilebmp.Canvas.CopyRect(r, pic.bitmap.Canvas, r2);
-          tilebmp.Canvas.Unlock;
-
-          jpegfname := tile_dir + '\tile-' + inttostr(tiff.num) + '-'+inttostr(ix)+'-'+inttostr(iy)+'.jpg';
-
-          tilejpg.Assign(tilebmp) ;
-          tilejpg.CompressionQuality := jpegQuality;//75;//80;
-          tilejpg.Compress;
-          tilejpg.SaveToFile(jpegfname);
         end else begin
-          cmd := '"'+gdal_path + 'gdal_translate.exe" -of JPEG -co QUALITY=' + inttostr(jpegQuality) + ' -expand rgb -srcwin '+inttostr(x)+' '+inttostr(y)+' '+inttostr(tw)+' '+inttostr(th)+' "'+WinToDos(tiff.fname)+'" ';
-          cmd := cmd + ' '+tile_dir + '\tile-' + inttostr(tiff.num) + '-'+inttostr(ix)+'-'+inttostr(iy)+'.jpg';
-          cmd := WinToDos(cmd);
-          file_put_contents(gdal_path+'tilify.bat', cmd);
-          //log(cmd);
-          execcmd(gdal_path+'tilify.bat', false, true);
-          if do_resize then set_jpeg_padding(tile_dir + '\tile-' + inttostr(tiff.num) + '-'+inttostr(ix)+'-'+inttostr(iy)+'.jpg', hor_mode, ver_mode);
+        if (hor_mode = 'left') then begin
+          r.left := 0;
+          r.Right := tw;
+        end else begin
+          r.Left := 256 -  tw;
+          r.Right := 256;
+        end;
+
+        if (ver_mode = 'top') then begin
+          r.top := 0;
+          r.Bottom := th;
+        end else begin
+          r.top := 256 - th;
+          r.Bottom := 256;
+        end;
+
         end;
 
 
+        tilebmp.Canvas.CopyRect(r, pic.bitmap.Canvas, r2);
+        tilebmp.Canvas.Unlock;
 
+        jpegfname := tile_dir + '\tile-' + inttostr(tiff.num) + '-'+inttostr(ix)+'-'+inttostr(iy)+'.jpg';
+
+        tilejpg.Assign(tilebmp) ;
+        tilejpg.CompressionQuality := jpegQuality;//75;//80;
+        tilejpg.Compress;
+        tilejpg.SaveToFile(jpegfname);
       except
         have_errors := true;
         msg := '[err] while tiling image';
@@ -396,12 +381,65 @@ begin
     end;
   end;
 
-  if use_external then clean_dir(tile_dir, '*.xml');
-
   FreeAndNil(pic);
   FreeAndNil(tilebmp);
   FreeAndNil(tilejpg);
   FreeAndNil(blackbmp);
+end;
+
+procedure cconvertThread.gdal_craft_tiles( );
+var
+  tiff : TGeoRasterRec;
+  cmd : string;
+  gdal_path : string;
+  gdal_rgb_opt, gdal_band_opt : string;
+  f : textfile;
+  ix, iy, x, y, tw, th : dword;
+  do_resize : boolean;
+  ver_mode, hor_mode : string;
+
+begin
+  tiff := tifffiles[ curtiff ];
+  gdal_path := ExtractFilePath(ParamStr(0)) + '\gdal\';
+  gdal_rgb_opt :=  '';
+  gdal_band_opt := '';
+  if (tiff.tiffBitsPerPixel = TIFF_8BYTES_PERPIXEL) then gdal_rgb_opt := ' -expand rgb '
+    else gdal_band_opt := tiff.bandsStr;
+
+  //craft bat file
+  AssignFile(f, gdal_path+'craft_tiles.bat');
+  rewrite(f);
+  for ix:=1 to tiff.tilew do begin
+    for iy:=1 to tiff.tileh do begin
+      get_tile_params(ix, iy, tiff, x, y, tw, th, do_resize, hor_mode, ver_mode);
+      
+      cmd := '"'+gdal_path + 'gdal_translate.exe" -of JPEG '+gdal_band_opt+' -co QUALITY=' + inttostr(jpegQuality) + ' ' + gdal_rgb_opt + ' -srcwin '+inttostr(x)+' '+inttostr(y)+' '+inttostr(tw)+' '+inttostr(th)+' "'+tiff.fname+'" ';
+      cmd := cmd + '  "'+tile_dir + '\tile-' + inttostr(tiff.num) + '-'+inttostr(ix)+'-'+inttostr(iy)+'.jpg'+'"';
+      cmd := WinToDos(cmd);
+      writeln(f, cmd);
+    end;
+  end;
+  closefile(f);
+
+  //craft files
+  execcmd(gdal_path+'craft_tiles.bat', true, true);
+
+  //add paddings if need
+  for ix:=1 to tiff.tilew do begin
+    for iy:=1 to tiff.tileh do begin
+      get_tile_params(ix, iy, tiff, x, y, tw, th, do_resize, hor_mode, ver_mode);
+
+      if do_resize then set_jpeg_padding(tile_dir + '\tile-' + inttostr(tiff.num) + '-'+inttostr(ix)+'-'+inttostr(iy)+'.jpg', hor_mode, ver_mode);
+    end;
+  end;
+
+
+  clean_dir(tile_dir, '*.xml');
+
+
+
+
+
 end;
 
 

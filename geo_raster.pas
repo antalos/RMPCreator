@@ -11,6 +11,9 @@ const
   IM_TYPE_GIF  = 2;
   IM_TYPE_PNG  = 3;
   IM_TYPE_BMP  = 4;
+  
+  TIFF_8BYTES_PERPIXEL = 0;
+  TIFF_24BYTES_PERPIXEL = 1;
 
 type
 
@@ -33,6 +36,8 @@ type
 
     num : dword;
     isok : boolean;
+    tiffBitsPerPixel : byte;
+    bandsStr : string;
   end;
 
 
@@ -40,6 +45,9 @@ type
 function load_georaster(fn : string) : TGeoRasterRec;
 function get_ozi_options(fn : string; var raster_fname : string;  var imgw, imgh : dword; var scalex, scaley, leftx, lefty : double; var msg : string) : boolean;
 function get_img_options(fn : string; var w,h : dword ) : boolean;
+function getBytesPerPixel(fn : string; var res : byte; var bands : string) : boolean;
+
+function getGdalInfo(fn : string) : boolean;
 
 implementation
 
@@ -56,10 +64,13 @@ function load_georaster(fn : string) : TGeoRasterRec;
       tx, ty, cmin, cmax : double;
       x_dif, y_dif : dword;
       msg : string;
-      s : string;
+      s, bands : string;
       calibrate_res : integer;
+      tiffBitsPerPixel : byte;
+
 begin
   res.err := '';
+  res.tiffBitsPerPixel := TIFF_8BYTES_PERPIXEL;
 
   //determing raster type
   s := lowercase(fn);
@@ -105,6 +116,7 @@ begin
   end;
 
 
+
   if not(isok) then begin
     res.err := msg;
     result := res;
@@ -117,23 +129,35 @@ begin
   if (pos('.gif', s) = length(s) - 3)  then res.im_type := IM_TYPE_GIF;
   if (pos('.png', s) = length(s) - 3)  then res.im_type := IM_TYPE_PNG;
   if (pos('.bmp', s) = length(s) - 3)  then res.im_type := IM_TYPE_BMP;
-  
-  
+
+
+  if (isok) then begin
+    isok := getBytesPerPixel(res.fname, tiffBitsPerPixel, bands);
+    if not(isok) then begin
+      res.err := 'Err while getting image bit depth';
+      result := res;
+      exit;
+    end;
+    res.tiffBitsPerPixel := tiffBitsPerPixel;
+    res.bandsStr := bands;
+  end;
 
 
   
 
-    brx := tlx + abs(pixx) * w;
-    bry := tly + abs(pixy) * h;
-
+  brx := tlx + abs(pixx) * w;
+  bry := tly + abs(pixy) * h;
 
   scalex := pixx * 256;
   scaley := pixy * 256;
 
 
+  log( res.fname );
   log( Format('Image Size = %dx%d ', [w,h])+'  Scale X:'+fstr(scalex)+' Scale Y:'+fstr(scaley)+' pixX='+fstr(pixx)+' pixY='+fstr(pixy));
   log( 'Top left: '+dump_coordx(tlx)+' , '+dump_coordy(tly)+'   =   '+fstr(tlx)+' , '+fstr(tly));
-  log( 'Bot righ: '+dump_coordx(brx)+' , '+dump_coordy(bry)+'   =   '+fstr(brx)+' , '+fstr(bry));      
+  log( 'Bot righ: '+dump_coordx(brx)+' , '+dump_coordy(bry)+'   =   '+fstr(brx)+' , '+fstr(bry));
+  if ( res.tiffBitsPerPixel = TIFF_8BYTES_PERPIXEL ) then log('pxlFormat: 8bit, bands: '+res.bandsStr)
+    else log('pxlFormat: 24bit, bands: '+res.bandsStr);                                                   
 
 
   if (w = 0) or (h = 0) or (pixx = 0) or (pixy = 0) then begin
@@ -281,7 +305,7 @@ var s, p : String;
 
 
 begin
-DecimalSeparator := '.';
+  DecimalSeparator := '.';
   result := true;
   try
     assignfile(f, fn);
@@ -325,6 +349,7 @@ DecimalSeparator := '.';
 
       //img file
       if i = 3 then begin
+        s := GetCurrentDir()+'\'+s;
         if FileExists(s) then raster_fname := s
         else begin
           p := ExtractFilePath(fn);
@@ -336,7 +361,9 @@ DecimalSeparator := '.';
             exit;
           end;
         end;
+        
       end;
+
 
       //cordinates
       if (pos('Point', s) = 1) then begin
@@ -489,23 +516,16 @@ DecimalSeparator := '.';
 
 end;
 
-
-
-function get_img_options(fn : string; var w,h : dword ) : boolean;
-  var f : textfile;
+function getGdalInfo(fn : string) : boolean;
+  var
       s : string;
       dir : string;
-      arrs : array [1..255] of string;
-      ns : word;
-
 begin
   result := true;
   dir := ExtractFilePath(ParamStr(0));
-  w := 0;
-  h := 0;
   if FileExists(dir+'\gdal\info.txt') then DeleteFile( PChar(dir+'\gdal\info.txt') );
 
-  s := dir+'\gdal\gdalinfo.exe "' + fn + '" > '+dir+'\gdal\info.txt';
+  s := '"'+dir+'\gdal\gdalinfo.exe" "' + fn + '" > "'+dir+'\gdal\info.txt"';
   s := WinToDos(s);
 
   file_put_contents( dir+'\gdal\sys.bat', s );
@@ -516,7 +536,26 @@ begin
     exit;
   end;
 
-  AssignFile(f, dir+'\gdal\info.txt');
+end;
+
+function get_img_options(fn : string; var w,h : dword ) : boolean;
+  var f : textfile;
+      s : string;
+      dir : string;
+      arrs : array [1..255] of string;
+      ns : word;
+begin
+  result := true;
+  if getGdalInfo(fn) = false then begin
+    result := false;
+    exit;
+  end;
+
+  w := 0;
+  h := 0;
+  
+
+  AssignFile(f, ExtractFilePath(ParamStr(0)) + '\gdal\info.txt');
   reset(f);
 
   while not( eof(f) ) do begin
@@ -533,6 +572,42 @@ begin
   closefile(f);
 
   if (w = 0) or (h = 0) then  result := false;
+end;
+
+
+function getBytesPerPixel(fn : string; var res : byte; var bands : string) : boolean;
+  var f : textfile;
+      s : string;
+      read : boolean;
+begin
+  result := true;
+  if getGdalInfo(fn) = false then begin
+    result := false;
+    exit;
+  end;
+
+  AssignFile(f, ExtractFilePath(ParamStr(0)) + '\gdal\info.txt');
+  bands := '';
+  read := false;
+
+  res := TIFF_24BYTES_PERPIXEL;
+  reset(f);
+  while not( eof(f) ) do begin
+    readln(f, s);
+    read := true;
+    if pos('ColorInterp=Palette', s) > 0 then begin
+      res := TIFF_8BYTES_PERPIXEL;
+      break;
+    end;
+
+    if pos('ColorInterp=Red', s) > 0 then bands := bands + ' -b ' + copy(s, 6, 1);
+    if pos('ColorInterp=Green', s) > 0 then bands := bands + ' -b ' + copy(s, 6, 1);
+    if pos('ColorInterp=Blue', s) > 0 then bands := bands + ' -b ' + copy(s, 6, 1);
+  end;
+  closefile(f);
+
+
+  if not(read) then result := false;
 end;
 
 end.

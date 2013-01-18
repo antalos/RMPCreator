@@ -30,7 +30,7 @@ procedure clean_dir(dir,mask : string);
 
 function fstr(a:double) : string;
 function istr(i:integer) : string;
-
+function UnixTime(): Longint;
 
 
 
@@ -47,7 +47,7 @@ procedure set_jpeg_padding(fn, hor_mode, ver_mode:string);
 procedure writeToOffset(f:TFilestream; const Buffer; offset, Count: Longint);
 
 implementation
-
+uses main;
 
 
 function read_config_val(key:string):string;
@@ -310,19 +310,37 @@ begin
 end;
 
 procedure set_jpeg_padding(fn, hor_mode, ver_mode:string);
-  var f : string;
+  var
     Dest,Source:TBitmap;
-    jpg:TJPEGImage;
+    jpg: TJPEGImage;
     r, r2 : trect;
+    pic : TPicture;
+    i : integer;
 begin
+//  log('set padding for :'+fn);
+  Dest := TBitmap.Create;
+  Source := TBitmap.Create;
+  Source.PixelFormat := pf24bit;
 
-  Dest:=TBitmap.Create;
-  Source:=TBitmap.Create;
-
-  jpg:=TJPEGImage.Create;
+  jpg := TJPEGImage.Create;
   jpg.LoadFromFile(fn);
-  Source.Assign(jpg);
+  source.Width := jpg.Width;
+  source.Height := jpg.Height;
+  if (jpg.Height = 1) then begin
+    pic := TPicture.Create;
+    pic.LoadFromFile(fn);
+    source.PixelFormat := pic.Bitmap.PixelFormat;
+    for i:=0 to pic.Width do begin
+      source.Canvas.Pixels[i, 0] := pic.Bitmap.Canvas.Pixels[i, 0];
+    end;
+    pic.free;
+  end else begin
+    Source.Assign(jpg);
+  end;
   jpg.free;
+
+  {Source.Assign(jpg);
+  jpg.free;}
 
   dest.width:=  256;
   dest.height:= 256;
@@ -361,9 +379,9 @@ begin
   dest.Canvas.CopyRect(r, Source.Canvas, r2);
 
 
-  jpg:=TJPEGImage.Create;
+  jpg:= TJPEGImage.Create;
   jpg.Assign(dest);
-  jpg.CompressionQuality := 100;
+  jpg.CompressionQuality := jpegQuality;
   jpg.SaveToFile(fn);
   jpg.Free;
   Source.Free;
@@ -376,5 +394,13 @@ begin
   f.Seek(offset, soFromBeginning);
   f.Write(buffer, count);
 end;
+
+function UnixTime(): Longint;
+const
+  UnixStartDate: TDateTime = 25569.0;
+begin
+  Result := Round((now() - UnixStartDate) * 86400);
+end;
+
 
 end.

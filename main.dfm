@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 258
-  Top = 0
+  Left = 263
+  Top = 143
   AutoScroll = False
   Caption = 'RMP Creator'
   ClientHeight = 568
@@ -29,6 +29,12 @@ object Form1: TForm1
     Width = 38
     Height = 13
     Caption = 'Loading'
+  end
+  object Image1: TImage
+    Left = 736
+    Top = 40
+    Width = 105
+    Height = 105
   end
   object pbConvert: TProgressBar
     Left = 1
@@ -75,8 +81,8 @@ object Form1: TForm1
       24)
   end
   object memoLog: TMemo
-    Left = 248
-    Top = 144
+    Left = 392
+    Top = 248
     Width = 393
     Height = 256
     Anchors = [akRight, akBottom]

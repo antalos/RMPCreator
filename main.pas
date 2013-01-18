@@ -52,6 +52,7 @@ type
     Button1: TButton;
     memoScale: TMemo;
     inJpegQual: TLabeledEdit;
+    Image1: TImage;
     procedure btnOpenTiffsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnHelpClick(Sender: TObject);
@@ -182,6 +183,7 @@ begin
 
 
   grid_delta := width - sgStatus.width;
+  if debug =1 then button1.Visible := true;
 end;
 
 
@@ -240,6 +242,7 @@ var
   tmp : string;
 begin
   pbConvert.Position := 0;
+  tmp := '';
 
   if (ntiffs > 0) then begin
     inc(curtiff);
@@ -376,22 +379,7 @@ end;
 
 procedure TForm1.btnClearTiffsClick(Sender: TObject);
   var i : word;
-     isok : boolean;
-     w, h : dword;
-
-     lat, lon : double;
-     r : integer;
-     from, dto : pchar; 
 begin
-{  g := tgifimage.create;
-  g.LoadFromFile('f:\!dig\!new_rastr\tiff\test\test2.gif');
-  image1.Picture.Assign( g.Bitmap );
-  b := TPNGObject.Create;
-  b.LoadFromFile('f:\!dig\!new_rastr\tiff\test\test2.png');
-  image1.Width := b.Width;
-  image1.Height := b.Height;
-  image1.Canvas.Draw( 0, 0, b);
-}
 
   for i:=1 to sgStatus.RowCount do begin
     sgStatus.Cells[0, i] := '';
@@ -434,6 +422,11 @@ var
   wPix, hPix, scale : cardinal;
   s : string;
 begin
+  wInches := 1.32;
+  hInches := 1.76;
+  wPix := 240;
+  hPix := 320;
+
   if (cbModel.text = 'eXp 110/GC/310') or (cbModel.text = 'Triton 300/400/500') then begin
     wInches := 1.32;
     hInches := 1.76;
@@ -521,8 +514,8 @@ begin
 end;
 
 procedure TForm1.FormResize(Sender: TObject);
-var scale, newSgwidth, new2 : word;
-    ratio : real;
+var newSgwidth : word;
+
 begin
   newSgwidth :=   width - grid_delta;
 
@@ -541,27 +534,10 @@ begin
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
-var
-  ProgressThread1 : cconvertThread;
-  tmp : string;
+
 begin
- ProgressThread1 := cconvertThread.Create( 'genshtab', 'mogilev', tiffs[1].num );
- ProgressThread1.rmpfname := sgStatus.Cells[5, tiffs[1].num ];
- ProgressThread1.add_tiff( tiffs[ 1 ] );
-   tmp := GetTempDir();
-    if tmp = '' then tmp := path;
-    if not(DirectoryExists(tmp)) then CreateDir(tmp);
+ //debug
 
-    ProgressThread1.forrmp_dir := tmp + '\forrmp\';
-    ProgressThread1.tile_dir := tmp + '\tiles\';
-
-  ProgressThread1.craft_description_file( ProgressThread1.rmpfname );
-  ProgressThread1.craft_ini_file();
-   ProgressThread1.craft_a00( tiffs[1] , 1);
-   showmessage('a00 done'); 
-   SaveResourceAsFile('exp_sig', ProgressThread1.forrmp_dir + '\BMP4BIT.ICS');
-    SaveResourceAsFile('triton_sig', ProgressThread1.forrmp_dir + 'chunk.ics');
-    ProgressThread1.pack_rmp( ProgressThread1.rmpfname );
 end;
 
 procedure TForm1.inJpegQualChange(Sender: TObject);

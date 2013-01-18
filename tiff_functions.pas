@@ -247,7 +247,7 @@ var
   FirstPageWidth, FirstPageHeight: Cardinal;
   FirstPageBitmap: TBitmap;
 begin
-  OpenTiff := TIFFOpen(Filename,'r');
+  OpenTiff := TIFFOpen(Filename, 'r');
   if OpenTiff = nil then raise Exception.Create( 'Unable to open file '''+Filename+'''');
 
   TIFFGetField(OpenTiff, TIFFTAG_IMAGEWIDTH, @FirstPageWidth);
