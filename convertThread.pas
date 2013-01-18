@@ -373,6 +373,7 @@ begin
         end else begin
           cmd := '"'+gdal_path + 'gdal_translate.exe" -of JPEG -co QUALITY=' + inttostr(jpegQuality) + ' -expand rgb -srcwin '+inttostr(x)+' '+inttostr(y)+' '+inttostr(tw)+' '+inttostr(th)+' "'+WinToDos(tiff.fname)+'" ';
           cmd := cmd + ' '+tile_dir + '\tile-' + inttostr(tiff.num) + '-'+inttostr(ix)+'-'+inttostr(iy)+'.jpg';
+          cmd := WinToDos(cmd);
           file_put_contents(gdal_path+'tilify.bat', cmd);
           //log(cmd);
           execcmd(gdal_path+'tilify.bat', false, true);

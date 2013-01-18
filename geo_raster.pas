@@ -505,7 +505,9 @@ begin
   h := 0;
   if FileExists(dir+'\gdal\info.txt') then DeleteFile( PChar(dir+'\gdal\info.txt') );
 
-  s := dir+'\gdal\gdalinfo.exe "' + (WinToDos(fn)) + '" > '+dir+'\gdal\info.txt';
+  s := dir+'\gdal\gdalinfo.exe "' + fn + '" > '+dir+'\gdal\info.txt';
+  s := WinToDos(s);
+
   file_put_contents( dir+'\gdal\sys.bat', s );
   execcmd( dir+'\gdal\sys.bat', false, true);
 
