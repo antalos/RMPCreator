@@ -30,12 +30,6 @@ object Form1: TForm1
     Height = 13
     Caption = 'Loading'
   end
-  object Image1: TImage
-    Left = 736
-    Top = 40
-    Width = 105
-    Height = 105
-  end
   object pbConvert: TProgressBar
     Left = 1
     Top = 542
@@ -289,7 +283,6 @@ object Form1: TForm1
     Caption = 'Button1'
     TabOrder = 15
     Visible = False
-    OnClick = Button1Click
   end
   object inJpegQual: TLabeledEdit
     Left = 187

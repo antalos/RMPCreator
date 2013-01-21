@@ -52,7 +52,6 @@ type
     Button1: TButton;
     memoScale: TMemo;
     inJpegQual: TLabeledEdit;
-    Image1: TImage;
     procedure btnOpenTiffsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnHelpClick(Sender: TObject);
@@ -72,7 +71,6 @@ type
     procedure inUseExternalXChange(Sender: TObject);
     procedure inUseExternalYChange(Sender: TObject);
     procedure FormResize(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
     procedure inJpegQualChange(Sender: TObject);
   private
     { Private declarations }
@@ -97,7 +95,7 @@ var
 
 const
   debug = 0;
-  ver = '0.95';
+  ver = '0.951';
 
 
 procedure log(s:string);
@@ -421,7 +419,15 @@ var
   wInches, hInches, qf, h : double;
   wPix, hPix, scale : cardinal;
   s : string;
+  hw, hw2,
+
+  titleLength: Integer;
+  title: string;
 begin
+
+
+
+
   wInches := 1.32;
   hInches := 1.76;
   wPix := 240;
@@ -527,18 +533,9 @@ begin
   sgStatus.ColWidths[4] :=  round(newSgwidth * (sgStatus.ColWidths[4] / sgStatus.width) ) ;
   sgStatus.ColWidths[5] :=  round(newSgwidth * (sgStatus.ColWidths[5] / sgStatus.width) ) ;
 
-
-
-
   sgStatus.width := newSgwidth;
 end;
 
-procedure TForm1.Button1Click(Sender: TObject);
-
-begin
- //debug
-
-end;
 
 procedure TForm1.inJpegQualChange(Sender: TObject);
 begin
