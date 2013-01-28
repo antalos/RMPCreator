@@ -1,14 +1,4 @@
 {
-done:
-*++ fixed tlm error + in craft tlm change TLM buf to filestream
-*++ comression from 90 to 75
-*++ add anchor to statusbar
-*++ fix memory leak on internal convertor
-++ add log to scale calc
-
-
-ToDO:
--- add info about scales
 
 D:\TEMP\PROJ4\proj-4.6.1\bin>cs2cs +proj=latlong +ellps=krass +towgs84=28,-130,-95,0,0,0,0 +to  +proj=latlong +ellps=WGS84 +datum=WGS84
 }
@@ -19,12 +9,10 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, convertThread, StdCtrls, Grids, functions, JPEG,
   ExtCtrls, frmAbout, tiff_functions, Math, geo_raster, gifimage, pngimage,
-  geotiff_export_Scale, fVisualise, ozi_api
-;
+  geotiff_export_Scale, fVisualise, ozi_api;
 
 type
   TForm1 = class(TForm)
-    pbConvert: TProgressBar;
     btnOpenTiffs: TButton;
     openTiff: TOpenDialog;
     sgStatus: TStringGrid;
@@ -52,6 +40,8 @@ type
     Button1: TButton;
     memoScale: TMemo;
     inJpegQual: TLabeledEdit;
+    StatusBar1: TStatusBar;
+
     procedure btnOpenTiffsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnHelpClick(Sender: TObject);
@@ -72,6 +62,8 @@ type
     procedure inUseExternalYChange(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure inJpegQualChange(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -91,11 +83,12 @@ var
   ntiffs, curline, curtiff : word;
   grid_delta : word;
   jpegQuality : integer;
-
+  myPB: TProgressBar; 
+  ProgressBarStyle: LongInt;
 
 const
   debug = 0;
-  ver = '0.951';
+  ver = '0.96';
 
 
 procedure log(s:string);
@@ -182,6 +175,26 @@ begin
 
   grid_delta := width - sgStatus.width;
   if debug =1 then button1.Visible := true;
+
+
+  StatusBar1.Panels.Items[2].Width := statusbar1.Width - (StatusBar1.Panels.Items[0].Width + StatusBar1.Panels.Items[1].Width + 6);
+   {create a run progress bar in the status bar}
+  myPB := TProgressBar.Create(StatusBar1);
+  myPB.Parent := StatusBar1;
+  {remove progress bar border}
+  ProgressBarStyle := GetWindowLong(myPB.Handle, GWL_EXSTYLE);
+  ProgressBarStyle := ProgressBarStyle - WS_EX_STATICEDGE;
+  SetWindowLong(myPB.Handle, GWL_EXSTYLE, ProgressBarStyle);
+  {set progress bar position and size - put in Panel[2]}
+  myPB.Left := StatusBar1.Panels.Items[0].Width + StatusBar1.Panels.Items[1].Width + 4;
+  myPB.Top := 4;
+  myPB.Height := StatusBar1.Height - 6;
+  myPB.Width := StatusBar1.Panels.Items[2].Width - 6;
+  {set range and initial state}
+  myPB.Min := 0;
+  myPB.Max := 100;
+  myPB.Step := 1;
+  myPB.Position := 0;
 end;
 
 
@@ -239,7 +252,7 @@ var
   prov, group : string;
   tmp : string;
 begin
-  pbConvert.Position := 0;
+  myPB.Position := 0;
   tmp := '';
 
   if (ntiffs > 0) then begin
@@ -292,7 +305,7 @@ begin
     ProgressThread1.Resume;
     ProgressThread1.FreeOnTerminate := true;
   end else begin
-    pbConvert.Position := 0;
+    myPB.Position := 0;
     toggle_controls(true);
     exit;
   end;
@@ -540,6 +553,16 @@ end;
 procedure TForm1.inJpegQualChange(Sender: TObject);
 begin
     write_config_val('jpeg_quality', trim(inJpegQual.Text) );
+end;
+
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+  myPb.Free;
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  mypb.position := 100;
 end;
 
 end.

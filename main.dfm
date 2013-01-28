@@ -3,7 +3,7 @@ object Form1: TForm1
   Top = 143
   AutoScroll = False
   Caption = 'RMP Creator'
-  ClientHeight = 568
+  ClientHeight = 603
   ClientWidth = 792
   Color = clBtnFace
   Constraints.MinHeight = 600
@@ -17,10 +17,11 @@ object Form1: TForm1
   Position = poDesktopCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnResize = FormResize
   DesignSize = (
     792
-    568)
+    603)
   PixelsPerInch = 96
   TextHeight = 13
   object lLoading: TLabel
@@ -30,35 +31,27 @@ object Form1: TForm1
     Height = 13
     Caption = 'Loading'
   end
-  object pbConvert: TProgressBar
-    Left = 1
-    Top = 542
-    Width = 790
-    Height = 26
-    Anchors = [akLeft, akRight, akBottom]
-    TabOrder = 0
-  end
   object btnOpenTiffs: TButton
     Left = 1
     Top = 7
     Width = 75
     Height = 34
     Caption = 'Open maps'
-    TabOrder = 1
+    TabOrder = 0
     OnClick = btnOpenTiffsClick
   end
   object sgStatus: TStringGrid
     Left = 1
     Top = 115
     Width = 790
-    Height = 396
+    Height = 435
     Anchors = [akLeft, akTop, akBottom]
     ColCount = 6
     Ctl3D = False
     FixedColor = clWindow
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goEditing]
     ParentCtl3D = False
-    TabOrder = 7
+    TabOrder = 6
     OnDrawCell = sgStatusDrawCell
     ColWidths = (
       64
@@ -76,14 +69,14 @@ object Form1: TForm1
   end
   object memoLog: TMemo
     Left = 392
-    Top = 248
+    Top = 283
     Width = 393
     Height = 256
     Anchors = [akRight, akBottom]
     Lines.Strings = (
       'memoLog')
     ScrollBars = ssVertical
-    TabOrder = 12
+    TabOrder = 11
   end
   object inProv: TLabeledEdit
     Left = 1
@@ -93,7 +86,7 @@ object Form1: TForm1
     EditLabel.Width = 63
     EditLabel.Height = 13
     EditLabel.Caption = 'Map Provider'
-    TabOrder = 3
+    TabOrder = 2
   end
   object inGroup: TLabeledEdit
     Left = 137
@@ -103,7 +96,7 @@ object Form1: TForm1
     EditLabel.Width = 53
     EditLabel.Height = 13
     EditLabel.Caption = 'Map Group'
-    TabOrder = 4
+    TabOrder = 3
   end
   object rbAtlas: TRadioButton
     Left = 1
@@ -111,7 +104,7 @@ object Form1: TForm1
     Width = 129
     Height = 17
     Caption = 'All files to one RMP'
-    TabOrder = 5
+    TabOrder = 4
     OnClick = rbAtlasClick
   end
   object rbSingle: TRadioButton
@@ -120,17 +113,17 @@ object Form1: TForm1
     Width = 135
     Height = 17
     Caption = 'Every file to single RMP'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = rbSingleClick
   end
   object btnHelp: TButton
     Left = 726
-    Top = 6
+    Top = 5
     Width = 65
     Height = 35
     Anchors = [akTop, akRight]
     Caption = 'Help'
-    TabOrder = 11
+    TabOrder = 10
     OnClick = btnHelpClick
   end
   object btnCreateRMP: TButton
@@ -139,37 +132,37 @@ object Form1: TForm1
     Width = 75
     Height = 34
     Caption = 'Create RMP'
-    TabOrder = 2
+    TabOrder = 1
     OnClick = btnCreateRMPClick
   end
   object btnDeleteTiff: TButton
     Left = 1
-    Top = 517
+    Top = 554
     Width = 49
     Height = 24
     Anchors = [akLeft, akBottom]
     Caption = 'Remove'
-    TabOrder = 8
+    TabOrder = 7
     OnClick = btnDeleteTiffClick
   end
   object btnClearTiffs: TButton
     Left = 55
-    Top = 517
+    Top = 554
     Width = 49
     Height = 24
     Anchors = [akLeft, akBottom]
     Caption = 'Clear'
-    TabOrder = 9
+    TabOrder = 8
     OnClick = btnClearTiffsClick
   end
   object btnVisualize: TButton
     Left = 716
-    Top = 514
+    Top = 554
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Visualize'
-    TabOrder = 10
+    TabOrder = 9
     OnClick = btnVisualizeClick
   end
   object GroupBox1: TGroupBox
@@ -179,7 +172,7 @@ object Form1: TForm1
     Height = 114
     Anchors = [akTop, akRight]
     Caption = 'geoTIFF export Scale'
-    TabOrder = 13
+    TabOrder = 12
     DesignSize = (
       273
       114)
@@ -242,7 +235,7 @@ object Form1: TForm1
     Height = 114
     Anchors = [akTop, akRight]
     Caption = 'Use gdal_translate for tiling'
-    TabOrder = 14
+    TabOrder = 13
     object inUseExternalX: TLabeledEdit
       Left = 8
       Top = 31
@@ -281,8 +274,9 @@ object Form1: TForm1
     Width = 57
     Height = 25
     Caption = 'Button1'
-    TabOrder = 15
+    TabOrder = 14
     Visible = False
+    OnClick = Button1Click
   end
   object inJpegQual: TLabeledEdit
     Left = 187
@@ -292,8 +286,25 @@ object Form1: TForm1
     EditLabel.Width = 60
     EditLabel.Height = 13
     EditLabel.Caption = 'JPEG quality'
-    TabOrder = 16
+    TabOrder = 15
     OnChange = inJpegQualChange
+  end
+  object StatusBar1: TStatusBar
+    Left = 0
+    Top = 583
+    Width = 792
+    Height = 20
+    Panels = <
+      item
+        Width = 90
+      end
+      item
+        Width = 80
+      end
+      item
+        Width = 500
+      end>
+    SizeGrip = False
   end
   object openTiff: TOpenDialog
     Filter = 

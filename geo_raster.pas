@@ -106,7 +106,7 @@ begin
         tly := fcalibrate.tly;
         isok := true;
       end else begin
-        isok := false;
+        //isok := false;
         if calibrate_res = mrNone then res.err := 'Err while loading image'
           else res.err := 'Manual calibration failed';
         result := res;
@@ -154,10 +154,9 @@ begin
 
   log( res.fname );
   log( Format('Image Size = %dx%d ', [w,h])+'  Scale X:'+fstr(scalex)+' Scale Y:'+fstr(scaley)+' pixX='+fstr(pixx)+' pixY='+fstr(pixy));
-  log( 'Top left: '+dump_coordx(tlx)+' , '+dump_coordy(tly)+'   =   '+fstr(tlx)+' , '+fstr(tly));
-  log( 'Bot righ: '+dump_coordx(brx)+' , '+dump_coordy(bry)+'   =   '+fstr(brx)+' , '+fstr(bry));
-  if ( res.tiffBitsPerPixel = TIFF_8BYTES_PERPIXEL ) then log('pxlFormat: 8bit, bands: '+res.bandsStr)
-    else log('pxlFormat: 24bit, bands: '+res.bandsStr);                                                   
+//  log( 'Top left: '+dump_coordx(tlx)+' , '+dump_coordy(tly)+'   =   '+fstr(tlx)+' , '+fstr(tly));
+//  log( 'Bot righ: '+dump_coordx(brx)+' , '+dump_coordy(bry)+'   =   '+fstr(brx)+' , '+fstr(bry));
+//  if ( res.tiffBitsPerPixel = TIFF_8BYTES_PERPIXEL ) then log('pxlFormat: 8bit, bands: '+res.bandsStr)    else log('pxlFormat: 24bit, bands: '+res.bandsStr);                                                   
 
 
   if (w = 0) or (h = 0) or (pixx = 0) or (pixy = 0) then begin
@@ -261,7 +260,7 @@ begin
     else res.tileh := ceil( (h - y_dif) / 256) + 1;
 
 //  log( 'difs: '+istr(x_dif)+','+istr(y_dif));
-//  log( 'tile wh: '+istr(res.tilew)+','+istr(res.tileh));
+  log( 'tile wh: '+istr(res.tilew)+','+istr(res.tileh));
 
   res.rmp_fname := StringReplace(res.fname + '.rmp', '\\', '\', [rfReplaceAll, rfIgnoreCase]);
 
@@ -283,7 +282,7 @@ type
   end;
 
 var s, p : String;
-    datumFrom, datumTo : Pchar;
+    datumFrom : Pchar;
     i,j : integer;
     f : textfile;
     ndots : byte;
@@ -298,15 +297,14 @@ var s, p : String;
 
     r, min, max : double;
     mini, maxi : integer;
-    apir : integer;
     projsetup : tprojsetup;
-    tst : Pchar;
-    uDatumFrom: Pchar;
+    path, fname : string;
 
 
 begin
   DecimalSeparator := '.';
   result := true;
+  datumFrom := '';
   try
     assignfile(f, fn);
     reset(f);
@@ -349,19 +347,16 @@ begin
 
       //img file
       if i = 3 then begin
-        s := GetCurrentDir()+'\'+s;
-        if FileExists(s) then raster_fname := s
-        else begin
-          p := ExtractFilePath(fn);
-          s := p + '\' + s;
-          if FileExists(s) then raster_fname := s
-          else begin
-            result := false;
-            msg := 'img file not found';
-            exit;
-          end;
+        path := ExtractFilePath(s);
+        fname := ExtractFileName(s);
+        if (path = '') then begin
+          path :=  ExtractFilePath(fn);
+          if not( FileExists(path + '\' + fname) ) then path :=   GetCurrentDir();
         end;
-        
+        raster_fname := path + '\' + fname;
+
+        while ( pos('\\', raster_fname) > 0 ) do raster_fname := StringReplace(raster_fname, '\\', '\', [rfReplaceAll]);
+
       end;
 
 
@@ -541,7 +536,6 @@ end;
 function get_img_options(fn : string; var w,h : dword ) : boolean;
   var f : textfile;
       s : string;
-      dir : string;
       arrs : array [1..255] of string;
       ns : word;
 begin

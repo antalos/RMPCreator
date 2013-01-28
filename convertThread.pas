@@ -24,11 +24,14 @@ type
     tifffiles : array[1..1024] of TGeoRasterRec;
     ntiffs : word;
     { Private declarations }
-    max, ndone, rownum : word;
+    max, ndone, rownum : dword;
     curtiff : word;
 
     procedure UpdateProgressBar;
     procedure SetMaxProgress;
+
+    procedure updStatusBar();
+
     procedure set_status();
     procedure run_next();
     procedure do_abort();
@@ -145,7 +148,9 @@ begin
   Synchronize( UpdateProgressBar );
 
   for i:=1 to ntiffs do begin
+
     curtiff := i;
+    Synchronize( updStatusBar );
     Synchronize( craft_tiles );
     if have_errors then begin do_abort(); exit; end;
     craft_a00( tifffiles[i], i );
@@ -286,10 +291,17 @@ begin
       p.free;
     end;
   except
+    {msg := '[err] while loading raster';
     have_errors := true;
-    msg := '[err] while loading raster';
     pic.Free;
-    exit;
+    exit;    }
+    use_external := true;
+  end;
+
+  if (use_external) then begin
+    log('using external!');
+      gdal_craft_tiles( );
+      exit;
   end;
 
   tilebmp := TBitmap.create;
@@ -736,16 +748,23 @@ end;
 
 procedure cconvertThread.SetMaxProgress;
 begin
-
-  fMain.pbConvert.min := 1;
-  fMain.pbConvert.max := max;
+  myPB.Min := 1;
+  myPB.max := max;
 end;
 
 
 procedure cconvertThread.UpdateProgressBar;
 begin
-  fMain.pbConvert.Position := ndone;
+  myPB.Position := ndone;
 end;
+
+
+procedure cconvertThread.updStatusBar();
+begin
+  fmain.statusBar1.Panels[0].Text := ExtractFileName( tifffiles[curtiff].fname );
+  fmain.statusBar1.Panels[1].Text := IntToStr(curtiff) + ' / ' + IntToStr(ntiffs) ;
+end;
+
 
 
 
